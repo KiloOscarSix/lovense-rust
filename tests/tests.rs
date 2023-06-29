@@ -1,8 +1,8 @@
-use lovense_rust::vibrate;
+use lovense_rust::*;
 
 // Write individual test functions
 #[tokio::test]
 async fn test_vibrate() {
-    // Test case 1
-    vibrate(2, 3.0, true).await;
+    let client = LovenseClient { local_ip: String::from("localhost"), http_port: 8000 };
+    client.single_vibrate(13, 20.0, None, true).await;
 }
