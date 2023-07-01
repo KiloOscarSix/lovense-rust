@@ -1,6 +1,6 @@
 use std::fmt::Formatter;
 
-pub enum LovenseAction {
+pub enum Action {
     Vibrate,
     Rotate,
     Pump,
@@ -10,7 +10,7 @@ pub enum LovenseAction {
     All
 }
 
-impl std::fmt::Display for LovenseAction {
+impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_string())
     }
