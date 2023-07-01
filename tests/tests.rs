@@ -1,12 +1,13 @@
 use std::env;
 use lovense_rust::client::LovenseClient;
 use lovense_rust::server::create_qr_code;
+use lovense_rust::strength::Strength;
 
 // Write individual test functions
 #[tokio::test]
 async fn test_vibrate() {
     let client = LovenseClient::new("192.168.0.92", 20010);
-    client.single_vibrate(13, 20.0, None, true).await;
+    client.single_vibrate(Strength::Eight, 20.0, None, true).await.expect("Failed to vibrate");
 }
 
 #[tokio::test]
