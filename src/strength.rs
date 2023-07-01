@@ -18,5 +18,5 @@ pub enum Strength {
     Seventeen = 17,
     Eighteen = 18,
     Nineteen = 19,
-    Twenty = 20
+    Twenty = 20,
 }

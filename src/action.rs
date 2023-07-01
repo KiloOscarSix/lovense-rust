@@ -7,7 +7,7 @@ pub enum Action {
     Thrusting,
     Fingering,
     Suction,
-    All
+    All,
 }
 
 impl std::fmt::Display for Action {
