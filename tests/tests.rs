@@ -1,3 +1,4 @@
+use std::env;
 use lovense_rust::client::LovenseClient;
 use lovense_rust::server::create_qr_code;
 
@@ -10,7 +11,13 @@ async fn test_vibrate() {
 
 #[tokio::test]
 async fn test_create_qr_code() {
-    match create_qr_code("eJFamEJC_aIzOFF7L-jANpY2XW2_RiwU8jboteQw-kWDYaYrON_vu7uMMPxEZ2gW", "123456789", "test").await {
+    dotenvy::dotenv().ok();
+
+    match create_qr_code(
+        &env::var("LOVENSE_TOKEN").expect("Expected a lovense token"),
+        "123456789",
+        "test"
+    ).await {
         Ok(res) => println!("{:?}", res),
         Err(e) => println!("{:?}", e)
     }
