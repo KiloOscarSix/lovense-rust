@@ -2,6 +2,7 @@ use std::cmp;
 use reqwest::{Client, Error, Response};
 use serde_json::{json, Value};
 use serde_json::Number;
+use crate::lovense_action::LovenseAction;
 
 
 pub struct LovenseClient {
@@ -50,97 +51,98 @@ impl LovenseClient {
         data
     }
 
-    /// Actions: Vibrate, Rotate, Pump, Thrusting, Fingering, Suction, All
     /// Strength: 0-20 except for Pump, which is 0-3
     /// Time (sec): 0 = indefinite length. Otherwise, running time should be greater than 1.
     /// Stop previous: Stop all previous commands and execute current commands
-    pub async fn single_function(&self, action: &str, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
+    pub async fn single_function(&self, action: LovenseAction, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
         let strength = match action {
-            "Pump" => cmp::min(strength, 3),
+            LovenseAction::Pump => cmp::min(strength, 3),
             _ => cmp::min(strength, 20)
         };
 
-        let action = format!("{}:{}", action, strength);
+        if strength < 0 {
+            panic!("Strength must be greater than 0");
+        }
+
+        let action = format!("{}:{}", action.to_string(), strength);
 
         let data = self.create_common_data(action, time_sec, toy_id, stop_previous);
 
-        match self.send_request("command", data).await {
-            Ok(_) => println!("Success"),
-            Err(e) => println!("Error: {}", e)
-        }
+        self.send_request("command", data).await
     }
 
-    pub async fn looping_function(&self, action: &str, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
+    pub async fn looping_function(&self, action: LovenseAction, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
         let strength = match action {
-            "Pump" => cmp::min(strength, 3),
+            LovenseAction::Pump => cmp::min(strength, 3),
             _ => cmp::min(strength, 20)
         };
 
-        let action = format!("{}:{}", action, strength);
+        if strength < 0 {
+            panic!("Strength must be greater than 0");
+        }
+
+        let action = format!("{}:{}", action.to_string(), strength);
 
         let mut data = self.create_common_data(action, time_sec, toy_id, stop_previous);
         data["loopRunningSec"] = Value::Number(Number::from_f64(loop_running_sec).unwrap());
         data["loopPauseSec"] = Value::Number(Number::from_f64(loop_pause_sec).unwrap());
 
-        match self.send_request("command", data).await {
-            Ok(_) => println!("Success"),
-            Err(e) => println!("Error: {}", e)
-        }
+        self.send_request("command", data).await
     }
 
-    pub async fn single_vibrate(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Vibrate", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_vibrate(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Vibrate, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_vibrate(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Vibrate", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_vibrate(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Vibrate, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_rotate(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Rotate", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_rotate(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Rotate, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_rotate(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Rotate", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_rotate(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Rotate, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_pump(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Pump", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_pump(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Pump, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_pump(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Pump", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_pump(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Pump, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_thrusting(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Thrusting", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_thrusting(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Thrusting, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_thrusting(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Thrusting", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_thrusting(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Thrusting, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_fingering(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Fingering", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_fingering(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Fingering, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_fingering(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Fingering", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_fingering(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Fingering, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_suction(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("Suction", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_suction(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::Suction, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_suction(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("Suction", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_suction(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::Suction, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 
-    pub async fn single_all(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) {
-        self.single_function("All", strength, time_sec, toy_id, stop_previous).await;
+    pub async fn single_all(&self, strength: i32, time_sec: f32, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.single_function(LovenseAction::All, strength, time_sec, toy_id, stop_previous).await
     }
 
-    pub async fn looping_all(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) {
-        self.looping_function("All", strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await;
+    pub async fn looping_all(&self, strength: i32, time_sec: f32, loop_running_sec: f64, loop_pause_sec: f64, toy_id: Option<String>, stop_previous: bool) -> Result<Response, Error> {
+        self.looping_function(LovenseAction::All, strength, time_sec, loop_running_sec, loop_pause_sec, toy_id, stop_previous).await
     }
 }
