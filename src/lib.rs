@@ -1,3 +1,4 @@
 pub mod client;
 pub mod server;
-mod lovense_action;
+pub mod action;
+pub mod strength;
