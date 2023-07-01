@@ -4,19 +4,19 @@ use serde_json::{json, Value};
 use serde_json::Number;
 
 pub struct LovenseClient {
-    pub local_ip: String,
-    pub http_port: Option<u16>,
-    pub https_port: Option<u16>
+    local_ip: String,
+    http_port: Option<u16>,
+    https_port: Option<u16>
 }
 
 impl LovenseClient {
-    pub fn new(local_ip: &str, http_port: u16) -> LovenseClient {
+    pub fn new(local_ip: &str, https_port: u16) -> LovenseClient {
         let local_ip = String::from(local_ip);
-        LovenseClient { local_ip, http_port: Some(http_port), https_port: None}
+        LovenseClient { local_ip, https_port: Some(https_port), http_port: None}
     }
 
-    pub fn new_https(local_ip: &str, https_port: u16) -> LovenseClient {
-        LovenseClient { local_ip: String::from(local_ip), https_port: Some(https_port), http_port: None }
+    pub fn new_http(local_ip: &str, http_port: u16) -> LovenseClient {
+        LovenseClient { local_ip: String::from(local_ip), http_port: Some(http_port), https_port: None }
     }
 
     async fn send_request(&self, endpoint: &str, data: Value) -> Result<Response, Error> {
