@@ -23,11 +23,11 @@ impl LovenseClient {
     async fn send_request(&self, endpoint: &str, data: Value) -> Result<Response, Error> {
         let client = Client::new();
 
-        let url = match (self.http_port.is_some(), self.https_port.is_some()) {
-            (false, false) => panic!("No port specified"),
-            (true, true) => panic!("Both http and https ports specified"),
-            (false, true) => format!("https://{}:{}/{}", self.local_ip, self.https_port.unwrap(), endpoint),
-            (true, false) => format!("http://{}:{}/{}", self.local_ip, self.http_port.unwrap(), endpoint),
+        let url = match (self.http_port, self.https_port) {
+            (None, None) => panic!("No port specified"),
+            (Some(http_port), None) => format!("http://{}:{}/{}", self.local_ip, http_port, endpoint),
+            (None, Some(https_port)) => format!("https://{}:{}/{}", self.local_ip, https_port, endpoint),
+            (Some(_), Some(https_port)) => format!("https://{}:{}/{}", self.local_ip, https_port, endpoint),
         };
 
 
